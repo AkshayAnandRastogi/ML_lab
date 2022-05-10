@@ -1,3 +1,28 @@
+Algorithm
+ID3 (Examples, Target_attribute, Attribute)
+
+< Examples are the training examples. Target attribute is the attribute whose value is to be
+predicted by the tree. Attributes is a list of other attributes that may be tested by the learned
+decision tree. Returns a decision tree that correctly classifies the given Examples.>
+
+*  Create a Root node for the tree
+*  If all Examples are positive, Return the single-node tree Root, with label = +
+*  If all Examples are negative, Return the single-node tree Root, with label = -
+*  If Attributes is empty, Return the single-node tree Root, with label = most common value of Target attribute in Examples
+*  Otherwise Begin
+    *  A <-- the attribute from Attributes that best* classifies Examples
+    *  The decision attribute for Root <-- A
+    *  For each possible value, vi, of A,
+        *   Add a new tree branch below Root, corresponding to the test A = vi
+        *   Let Examples: vi, be the subset of Examples that have value vi for A
+        *   If Examples: vi, is empty
+                * Then below this new branch add a leaf node with label = most common value of Target attribute in Examples
+                * Else below this new branch add the subtree
+                        ID3(Examples:vi, Target attribute, Attributes - {A})
+*  End
+*  Return Root
+
+
 import pandas as pd
 import numpy as np
 import math
