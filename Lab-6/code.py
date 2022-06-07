@@ -2,28 +2,31 @@
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-from sklearn.datasets import make_blobs
+import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 
-X, y = make_blobs(n_samples=300, centers=4, cluster_std=0.60, random_state=0)
-plt.scatter(X[:,0], X[:,1])
+df=pd.read_csv('diabetes.csv')
+plt.scatter(df.insulin,df['diastolic_bp'])
+
+plt.ylabel('insulin')
+plt.xlabel('diastolic_bp')
+
+from sklearn.cluster import KMeans
+km=KMeans(n_clusters=3)
+y_predicted=km.fit_predict(df[['insulin','diastolic_bp']])
+y_predicted
 
 
-wcss = []
-for i in range(1, 11):
-    kmeans = KMeans(n_clusters=i, init='k-means++', max_iter=300, n_init=10, random_state=0)
-    kmeans.fit(X)
-    wcss.append(kmeans.inertia_)
-plt.plot(range(1, 11), wcss)
-plt.title('Elbow Method')
-plt.xlabel('Number of clusters')
-plt.ylabel('WCSS')
-plt.show()
+df['cluster']=y_predicted
+km.cluster_centers_
 
-
-kmeans = KMeans(n_clusters=4, init='k-means++', max_iter=300, n_init=10, random_state=0)
-pred_y = kmeans.fit_predict(X)
-plt.scatter(X[:,0], X[:,1])
-plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='red')
-plt.show()
+df1=df[df.cluster==0]
+df2=df[df.cluster==1]
+df3=df[df.cluster==2]
+plt.scatter(df1.insulin,df1['diastolic_bp'],color='yellow')
+plt.scatter(df2.insulin,df2['diastolic_bp'],color='orange')
+plt.scatter(df3.insulin,df3['diastolic_bp'],color='black')
+plt.scatter(km.cluster_centers_[:,0],km.cluster_centers_[:,1],color='purple',marker='*',label='centroid')
+plt.ylabel('insulin')
+plt.xlabel('diastolic_bp')
+plt.legend()
