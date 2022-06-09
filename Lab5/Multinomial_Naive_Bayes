@@ -1,32 +1,67 @@
+import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-from sklearn import metrics
 
-df = pd.read_csv("diabetes.csv")
-feature_col_names = ['num_preg', 'glucose_conc', 'diastolic_bp', 'thickness', 'insulin', 'bmi', 'diab_pred', 'age']
-predicted_class_names = ['diabetes']
+data =  pd.read_csv('spam_ham_dataset.csv')
+data.head()
+y = list(data['target'].values)
+X = data.iloc[:,1:].values
+print(f'Target Values: {y}')
+print(f'Features: \n{X}')
 
-X = df[feature_col_names].values 
-y = df[predicted_class_names].values
+y_train = y[:8]
+y_val = y[8:]
+X_train = X[:8]
+X_val = X[8:]
+print(f"Number of instances in training set: {len(X_train)}")
+print(f"Number of instances in testing set: {len(X_val)}")
 
-#print(df.head)
-xtrain,xtest,ytrain,ytest=train_test_split(X,y,test_size=0.40)
-
-#print ('\n the total number of Training Data :',ytrain.shape)
-#print ('\n the total number of Test Data :',ytest.shape)
-
-clf = GaussianNB().fit(xtrain,ytrain.ravel())
-predicted = clf.predict(xtest)
-predictTestData= clf.predict([[6,148,72,35,0,33.6,0.627,50]])
-
-#print('\n Confusion matrix')
-#print(metrics.confusion_matrix(ytest,predicted))
-
-print('\n Accuracy of the classifier is',metrics.accuracy_score(ytest,predicted))
-
-print('\n The value of Precision', metrics.precision_score(ytest,predicted))
-
-print('\n The value of Recall', metrics.recall_score(ytest,predicted))
-
-print("Predicted Value for individual Test Data:", predictTestData)
+class NaiveBayesClassifier:   
+    def __init__(self, X, y):
+        self.X, self.y = X, y 
+        self.N = len(self.X)
+        self.dim = len(self.X[0]) 
+        self.attrs = [[] for _ in range(self.dim)] 
+        self.output_dom = {} 
+        self.data = []     
+        for i in range(len(self.X)):
+            for j in range(self.dim):
+                if not self.X[i][j] in self.attrs[j]:
+                    self.attrs[j].append(self.X[i][j])         
+            if not self.y[i] in self.output_dom.keys():
+                self.output_dom[self.y[i]] = 1
+            else:
+                self.output_dom[self.y[i]] += 1
+            self.data.append([self.X[i], self.y[i]])
+    def classify(self, entry):
+        solve = None 
+        max_arg = -1
+        for y in self.output_dom.keys():
+            prob = self.output_dom[y]/self.N 
+            for i in range(self.dim):
+                cases = [x for x in self.data if x[0][i] == entry[i] and x[1] == y] 
+                n = len(cases)
+                prob *= n/self.N     
+            if prob > max_arg:
+                max_arg = prob
+                solve = y
+        return solve
+nbc = NaiveBayesClassifier(X_train, y_train)
+total_cases = len(y_val)
+good = 0
+bad = 0
+predictions = []
+for i in range(total_cases):
+    predict = nbc.classify(X_val[i])
+    predictions.append(predict)
+    if y_val[i] == predict:
+        good += 1
+    else:
+        bad += 1
+print('Predicted values:', predictions)
+print('Actual values:', y_val)
+print()
+print('Total number of testing instances in the dataset:', total_cases)
+print('Number of correct predictions:', good)
+print('Number of wrong predictions:', bad)
+print()
+print('Accuracy of Bayes Classifier:', good/total_cases)
